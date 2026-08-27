@@ -79,6 +79,10 @@ class Elements(object):
         # Encoders
         self.encoders = []
         for i, cc in enumerate(ENCODER_CCS):
+            if cc in (52, 53): # Free Knobs 13 and 14 for manual MIDI mapping
+                self.encoders.append(None)
+                continue
+                
             encoder = EncoderElement(
                 MIDI_CC_TYPE,
                 ENCODER_CHANNEL,
@@ -86,12 +90,11 @@ class Elements(object):
                 Live.MidiMap.MapMode.relative_smooth_two_compliment,
                 name='Encoder_{}'.format(i + 1)
             )
-            # Remove mapping_sensitivity override to let standard knobs go at default (faster) speed
-            # encoder.mapping_sensitivity = 2.0 
             self.encoders.append(encoder)
 
+        valid_encoders = [e for e in self.encoders if e is not None]
         self.encoders_matrix = ButtonMatrixElement(
-            rows=[self.encoders],
+            rows=[valid_encoders],
             name='Encoders_Matrix'
         )
 

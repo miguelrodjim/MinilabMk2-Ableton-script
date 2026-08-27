@@ -14,7 +14,8 @@ class DebugComponent(Component):
         self._encoders = encoders
         self._show_message = show_message_fn
         for i, enc in enumerate(self._encoders):
-            enc.add_value_listener(lambda value, index=i: self._on_value(value, index))
+            if enc is not None:
+                enc.add_value_listener(lambda value, index=i: self._on_value(value, index))
             
     def _on_value(self, value, index):
         msg = "Knob {} (CC {}) turned: {}".format(index + 1, self._encoders[index].message_identifier(), value)
