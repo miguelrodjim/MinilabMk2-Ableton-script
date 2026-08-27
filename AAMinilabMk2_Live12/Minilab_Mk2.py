@@ -1,10 +1,26 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from ableton.v2.control_surface import ControlSurface, Layer
+from ableton.v2.control_surface.component import Component
 from _Arturia.ArturiaControlSurface import LIVE_MODE_MSG_HEAD, ON_VALUE, OFF_VALUE, SETUP_MSG_PREFIX, LOAD_MEMORY_COMMAND, SETUP_MSG_SUFFIX
 
 from .Elements import Elements
 from .CustomControlComponent import SimpleTransportComponent, SimpleMixerComponent, SimpleDeviceComponent, CustomControlComponent
+
+
+class DebugComponent(Component):
+    def __init__(self, encoders, show_message_fn, *a, **k):
+        super(DebugComponent, self).__init__(*a, **k)
+        self._encoders = encoders
+        self._show_message = show_message_fn
+        for i, enc in enumerate(self._encoders):
+            enc.add_value_listener(lambda value, index=i: self._on_value(value, index))
+            
+    def _on_value(self, value, index):
+        msg = "Knob {} (CC {}) turned: {}".format(index + 1, self._encoders[index].message_identifier(), value)
+        self._show_message(msg)
+        import logging
+        logging.getLogger(__name__).info(msg)
 
 
 class Minilab_Mk2(ControlSurface):
@@ -47,6 +63,7 @@ class Minilab_Mk2(ControlSurface):
             # Custom Controls (Clip Gain, Scroll)
             self._custom = CustomControlComponent()
             self._custom.name = 'CustomControls'
+            self._custom.mixer = self._mixer
             self._custom.set_clip_gain_element(self._elements.encoder_clip_gain)
             self._custom.set_scroll_v_element(self._elements.encoder_scroll_v)
             self._custom.set_scroll_h_element(self._elements.encoder_scroll_h)
@@ -57,6 +74,11 @@ class Minilab_Mk2(ControlSurface):
             self._device.name = 'Device'
             self._device.set_encoder_elements(self._elements.encoders[0:8])
             self._device.set_enabled(True)
+
+            # Debugger
+            self._debug = DebugComponent(self._elements.encoders, self.show_message)
+            self._debug.name = 'Debug'
+            self._debug.set_enabled(True)
 
             # Force hardware into Preset 8 (Ableton Mode)
             self._send_midi(SETUP_MSG_PREFIX + (LOAD_MEMORY_COMMAND, 7) + SETUP_MSG_SUFFIX)

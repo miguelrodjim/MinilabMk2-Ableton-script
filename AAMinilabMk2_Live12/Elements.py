@@ -21,9 +21,10 @@ class Colors:
         RecordOff = Color(0)     # Off
         LoopOn = Color(16)       # Blue
         LoopOff = Color(0)       # Off
-        MetronomeOn = Color(17)  # Cyan
+        MetronomeOn = Color(20)  # Magenta / Purple
         MetronomeOff = Color(0)  # Off
         TapTempo = Color(127)    # White
+        ShiftOn = Color(17)      # Cyan
 
 skin = Skin(Colors)
 
@@ -85,6 +86,7 @@ class Elements(object):
                 Live.MidiMap.MapMode.relative_smooth_two_compliment,
                 name='Encoder_{}'.format(i + 1)
             )
+            encoder.mapping_sensitivity = 2.0
             self.encoders.append(encoder)
 
         self.encoders_matrix = ButtonMatrixElement(
