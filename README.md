@@ -138,10 +138,10 @@ Any standard 24-bit Hex color (`0xRRGGBB`) can be used.
 
 ## 📜 Architecture & Source Files
 
-* [`Minilab_Mk2.py`](file:///Volumes/DATA/DEVELOPMENT/minilab/MinilabMk2-Ableton-script/AAMinilabMk2_Live12/Minilab_Mk2.py): Main Control Surface entry point and component lifecycle manager.
-* [`Elements.py`](file:///Volumes/DATA/DEVELOPMENT/minilab/MinilabMk2-Ableton-script/AAMinilabMk2_Live12/Elements.py): Hardware button, encoder, pad, and color skin definitions.
-* [`CustomControlComponent.py`](file:///Volumes/DATA/DEVELOPMENT/minilab/MinilabMk2-Ableton-script/AAMinilabMk2_Live12/CustomControlComponent.py): Custom transport, accumulator-based scrubbing, and clip gain implementations.
-* [`AutoColorComponent.py`](file:///Volumes/DATA/DEVELOPMENT/minilab/MinilabMk2-Ableton-script/AAMinilabMk2_Live12/AutoColorComponent.py): Smart asynchronous track naming listener and auto-coloring engine.
+* [`Minilab_Mk2.py`](AAMinilabMk2_Live12/Minilab_Mk2.py): Main Control Surface entry point and component lifecycle manager.
+* [`Elements.py`](AAMinilabMk2_Live12/Elements.py): Hardware button, encoder, pad, and color skin definitions.
+* [`CustomControlComponent.py`](AAMinilabMk2_Live12/CustomControlComponent.py): Custom transport, accumulator-based scrubbing, and clip gain implementations.
+* [`AutoColorComponent.py`](AAMinilabMk2_Live12/AutoColorComponent.py): Smart asynchronous track naming listener and auto-coloring engine.
 
 ---
 
