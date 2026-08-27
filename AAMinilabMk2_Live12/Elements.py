@@ -116,7 +116,7 @@ class Elements(object):
 
         # Clickable Encoder Buttons
         self.encoder_1_button = ButtonElement(True, MIDI_CC_TYPE, PAD_CHANNEL, ENCODER_PUSH_1, name='Encoder_1_Button')
-        self.encoder_9_button = ButtonElement(True, MIDI_CC_TYPE, PAD_CHANNEL, ENCODER_PUSH_9, name='Encoder_9_Button')
+        self.encoder_9_button = ButtonElement(True, MIDI_CC_TYPE, PAD_CHANNEL, ENCODER_PUSH_9, name='Encoder_9_Button', skin=skin)
 
         # Pads Bank 1 (1-8) - Notes
         self.pads_bank_1 = []
