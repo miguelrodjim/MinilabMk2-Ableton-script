@@ -25,7 +25,7 @@ COLORS = {
     # PERCUSIÓN (Morado rosáceo oscuro)
     0xC71585: ['percs', 'percus', 'percussion'],
     # Elementos percusión (Morado rosáceo pastel)
-    0xFFB6C1: ['udu', 'cajon', 'pandero', 'trash', 'cascabeles', 'pandereta', 'castañuela', 'bongo', 'timbales', 'bongos', 'timbal', 'triangulo', 'crotalo', 'crotalos'],
+    0xFFB6C1: ['udu', 'cajon', 'pandero', 'trash', 'cascabeles', 'pandereta', 'castañuela', 'bongo', 'timbales', 'bongos', 'timbal', 'triangulo', 'crotalo', 'crotalos', 'palmas'],
     
     # GUITARRAS ELÉCTRICAS (Rojo oscuro)
     0x8B0000: ['electricas', 'elecs'],
@@ -48,7 +48,12 @@ COLORS = {
     # STRINGS (Marrón oscuro)
     0x5C4033: ['strings'],
     # Elementos strings (Marrón ocre dorado)
-    0xDAA520: ['violin', 'viola', 'contrabajo', 'cello']
+    0xDAA520: ['violin', 'viola', 'contrabajo', 'cello'],
+    
+    # VOCES (Verde oscuro)
+    0x006400: ['voces'],
+    # Elementos voces (Verde un poco más claro)
+    0x228B22: ['vox', 'voz', 'voz principal', 'principal', 'coro', 'armo', 'armo hi', 'armo low', 'rapeo', 'coros', 'voz doble', 'armo med']
 }
 
 class AutoColorComponent(Component):
