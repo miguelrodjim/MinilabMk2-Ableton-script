@@ -6,27 +6,44 @@ What started as a fork of previous community scripts has been completely overhau
 
 ---
 
-## 🚀 Key Features & Mappings
+## 🚀 Key Features
 
 Unlike the default Arturia script which focuses on Session View, this script reimagines the Minilab Mk2 as a powerhouse for navigating and mixing directly in the Arrangement View.
 
-### 🎛 1. Timeline Scrubbing (Knob 15)
-Navigate through your song structure without touching the mouse.
-- **Default (Turn):** Jumps the playhead forward or backward by exactly **1 Bar** at a time.
-- **Precision Mode (Shift + Turn):** Still jumps by 1 Bar, but physically increases the resistance of the knob. You will need to rotate the knob significantly more to trigger a jump, giving you tactile precision so you don't accidentally overshoot your target.
+- **Accumulator-smoothed Encoders:** All custom encoders in this script use an internal threshold system (accumulators). This ensures that physical rotation translates to smooth and predictable UI changes in Ableton, completely preventing the erratic jumps common in older MIDI scripts.
+- **Custom Hardware Mapping:** Almost every pad and knob has been carefully assigned to maximize workflow speed in the Arrangement View without needing to touch your mouse.
 
-### 🎚 2. Track Navigation (Knob 16)
-Scroll through your project vertically with ease.
-- **Turn:** Moves the selected track up or down in the Arrangement View.
-- *Note: We built a custom "accumulator" logic to ensure that scrolling feels natural. The knob has a built-in threshold so it doesn't fly through 20 tracks with a tiny nudge.*
+---
 
-### 🔊 3. Direct Clip Gain (Knob 10)
-Adjust audio levels surgically without relying on track faders.
-- **Turn:** Directly increases or decreases the **Clip Gain** of the currently selected audio clip.
-- This is incredibly useful for vocal comping or evening out audio takes dynamically from the hardware.
+## 🎛 Complete Hardware Mapping
 
-### ⚙️ 4. Smoothed Encoders
-All custom encoders in this script use an internal threshold system (accumulators). This ensures that physical rotation translates to smooth and predictable UI changes in Ableton, completely preventing the erratic jumps common in older MIDI scripts.
+### **Encoders (Knobs 1 - 16)**
+
+| Knob | Function | Description |
+| :--- | :--- | :--- |
+| **1-8** | **Device Macros** | Controls the 8 macro parameters of the currently selected device/plugin. |
+| **9** | **Cue Volume** | Adjusts the global Cue/Preview volume level. |
+| **10** | **Clip Gain** | *(Custom)* Directly alters the `gain` parameter of the currently selected audio clip. Incredibly useful for vocal comping or evening out audio takes dynamically. |
+| **11** | **Track Pan** | Pans the currently selected track left/right. |
+| **12** | **Track Volume** | Adjusts the volume fader of the currently selected track. |
+| **13** | *(Unassigned)* | Reserved for future custom mappings. |
+| **14** | *(Unassigned)* | Reserved for future custom mappings. |
+| **15** | **Timeline Scrubbing** | *(Custom)* Jumps the playhead forward or backward by exactly **1 Bar** at a time. <br><br>👉 **Precision Mode:** Hold **Pad 16 (Shift)** while turning to physically increase the resistance of the knob. You will need to rotate the knob significantly more to trigger a jump, preventing accidental overshoots. |
+| **16** | **Track Navigation** | *(Custom)* Scrolls up and down through your tracks in the Arrangement View. |
+
+### **Pads (1 - 16)**
+
+| Pad | Function | Description |
+| :--- | :--- | :--- |
+| **1-8** | **MIDI Notes** | Standard MIDI notes (Drum Rack/Keys). |
+| **9** | **Play** | Starts playback. |
+| **10** | **Stop** | Stops playback. |
+| **11** | **Record** | Toggles Global Record. |
+| **12** | **Arm Track** | Arms/Disarms the currently selected track for recording. |
+| **13** | **Mute Track** | Mutes/Unmutes the currently selected track. |
+| **14** | **Solo Track** | Solos/Unsolos the currently selected track. |
+| **15** | **Metronome** | Toggles the click track / metronome on and off. |
+| **16** | **Shift** | Modifier button. Hold this while turning **Knob 15** to engage Precision Scrubbing Mode. |
 
 ---
 

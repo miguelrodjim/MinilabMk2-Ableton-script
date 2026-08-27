@@ -72,6 +72,7 @@ class Minilab_Mk2(ControlSurface):
             # Device
             self._device = SimpleDeviceComponent()
             self._device.name = 'Device'
+            self._device.mixer = self._mixer
             self._device.set_encoder_elements(self._elements.encoders[0:8])
             self._device.set_enabled(True)
 

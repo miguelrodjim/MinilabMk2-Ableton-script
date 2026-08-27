@@ -317,7 +317,12 @@ class SimpleDeviceComponent(Component):
         if param_index < len(params):
             p = params[param_index]
             if not p.is_quantized:
-                delta = (p.max - p.min) * 0.01 * value
+                is_shift_pressed = False
+                if hasattr(self, 'mixer') and self.mixer:
+                    is_shift_pressed = self.mixer._shift_button.is_pressed
+                
+                multiplier = 0.001 if is_shift_pressed else 0.01
+                delta = (p.max - p.min) * multiplier * value
                 p.value = max(p.min, min(p.max, p.value + delta))
             else:
                 if value > 0:
@@ -374,7 +379,12 @@ class CustomControlComponent(Component):
         if clip:
             logger.info("Clip: {}, is_audio_clip: {}".format(clip, getattr(clip, 'is_audio_clip', False) if clip else None))
             if clip.is_audio_clip:
-                delta = value * 0.05
+                is_shift_pressed = False
+                if hasattr(self, 'mixer') and self.mixer:
+                    is_shift_pressed = self.mixer._shift_button.is_pressed
+                
+                multiplier = 0.01 if is_shift_pressed else 0.05
+                delta = value * multiplier
                 try:
                     clip.gain = max(0.0, clip.gain + delta)
                     logger.info("Gain set to: {:.2f}".format(clip.gain))
@@ -424,8 +434,13 @@ class CustomControlComponent(Component):
         
         self._scroll_h_accumulator += value
         
-        # Increase threshold to 0.15 (approx 10 physical clicks) to make it much slower and more controlled
-        threshold = 0.15
+        # Check if Shift is pressed via the mixer reference
+        is_shift_pressed = False
+        if hasattr(self, 'mixer') and self.mixer:
+            is_shift_pressed = self.mixer._shift_button.is_pressed
+            
+        # Increase threshold to 0.45 (approx 30 clicks) if Shift is pressed, otherwise 0.15 (approx 10 clicks)
+        threshold = 0.45 if is_shift_pressed else 0.15
         
         if abs(self._scroll_h_accumulator) >= threshold:
             try:

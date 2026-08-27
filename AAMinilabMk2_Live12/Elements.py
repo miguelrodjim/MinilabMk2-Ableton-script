@@ -86,7 +86,8 @@ class Elements(object):
                 Live.MidiMap.MapMode.relative_smooth_two_compliment,
                 name='Encoder_{}'.format(i + 1)
             )
-            encoder.mapping_sensitivity = 2.0
+            # Remove mapping_sensitivity override to let standard knobs go at default (faster) speed
+            # encoder.mapping_sensitivity = 2.0 
             self.encoders.append(encoder)
 
         self.encoders_matrix = ButtonMatrixElement(
