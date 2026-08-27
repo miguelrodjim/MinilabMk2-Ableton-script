@@ -70,7 +70,7 @@ class AutoColorComponent(Component):
 
     @listens('tracks')
     def _on_tracks_changed(self):
-        """ When a track is added or removed, re-bind name listeners """
+        print("AutoColor: _on_tracks_changed called")
         self._on_track_name_changed.replace_subjects(self.song.tracks)
         
         # Immediately colorize any tracks that might have been added
@@ -79,7 +79,7 @@ class AutoColorComponent(Component):
 
     @listens_group('name')
     def _on_track_name_changed(self, track):
-        """ When a specific track changes its name, colorize it """
+        print("AutoColor: _on_track_name_changed called for track: " + str(track.name))
         self._apply_color_to_track(track)
 
     def _apply_color_to_track(self, track):
@@ -88,13 +88,15 @@ class AutoColorComponent(Component):
             
         track_name = track.name
         
-        # Search for keyword matches
-        for regex, color_index, _ in self._compiled_regexes:
+        print("AutoColor: Checking track: " + str(track_name))
+        for regex, color_index, keyword in self._compiled_regexes:
             if regex.search(track_name):
+                print("AutoColor: Match found for keyword: " + str(keyword) + " color: " + str(color_index))
                 # Update the track color
                 if track.color_index != color_index:
                     try:
                         track.color_index = color_index
-                    except Exception:
-                        pass # Ignore errors if track doesn't support color changing
+                        print("AutoColor: Color applied successfully")
+                    except Exception as e:
+                        print("AutoColor: Error applying color: " + str(e))
                 break # Stop searching after first match

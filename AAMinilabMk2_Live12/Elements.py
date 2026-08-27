@@ -24,7 +24,7 @@ class Colors:
         MetronomeOn = Color(17)  # Magenta / Purple
         MetronomeOff = Color(0)  # Off
         TapTempo = Color(127)    # White
-        ShiftOn = Color(20)      # Cyan
+        ShiftOn = Color(17)      # Purple
 
 skin = Skin(Colors)
 
