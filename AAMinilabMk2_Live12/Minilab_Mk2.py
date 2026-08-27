@@ -6,6 +6,7 @@ from _Arturia.ArturiaControlSurface import LIVE_MODE_MSG_HEAD, ON_VALUE, OFF_VAL
 
 from .Elements import Elements
 from .CustomControlComponent import SimpleTransportComponent, SimpleMixerComponent, SimpleDeviceComponent, CustomControlComponent
+from .AutoColorComponent import AutoColorComponent
 
 
 class DebugComponent(Component):
@@ -81,6 +82,11 @@ class Minilab_Mk2(ControlSurface):
             self._debug = DebugComponent(self._elements.encoders, self.show_message)
             self._debug.name = 'Debug'
             self._debug.set_enabled(True)
+
+            # Auto-Color
+            self._auto_color = AutoColorComponent()
+            self._auto_color.name = 'AutoColor'
+            self._auto_color.set_enabled(True)
 
             # Force hardware into Preset 8 (Ableton Mode)
             self._send_midi(SETUP_MSG_PREFIX + (LOAD_MEMORY_COMMAND, 7) + SETUP_MSG_SUFFIX)
