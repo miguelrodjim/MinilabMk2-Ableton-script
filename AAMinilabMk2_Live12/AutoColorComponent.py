@@ -9,7 +9,7 @@ from __future__ import absolute_import, print_function, unicode_literals
 
 import re
 import logging
-from ableton.v2.base import listens, listens_group
+from ableton.v2.base import listens, listens_group, task
 from ableton.v2.control_surface import Component
 
 logger = logging.getLogger(__name__)
@@ -95,11 +95,14 @@ class AutoColorComponent(Component):
         for regex, color_index, keyword in self._compiled_regexes:
             if regex.search(track_name):
                 logger.info("AutoColor: Match found for keyword: " + str(keyword) + " color: " + str(color_index))
-                # Update the track color
+                # Update the track color deferred to avoid 'Changes cannot be triggered by notifications' error
                 if track.color_index != color_index:
-                    try:
-                        track.color_index = color_index
-                        logger.info("AutoColor: Color applied successfully")
-                    except Exception as e:
-                        logger.info("AutoColor: Error applying color: " + str(e))
+                    self._tasks.add(task.run(lambda t=track, c=color_index: self._do_color_change(t, c)))
                 break # Stop searching after first match
+
+    def _do_color_change(self, track, color_index):
+        try:
+            track.color_index = color_index
+            logger.info("AutoColor: Color applied successfully")
+        except Exception as e:
+            logger.info("AutoColor: Error applying color: " + str(e))
