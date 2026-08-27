@@ -88,6 +88,9 @@ class Minilab_Mk2(ControlSurface):
             # Activate Arturia Live Mode for the hardware (enables pads 9-16 as CCs)
             self._send_midi(LIVE_MODE_MSG_HEAD + (ON_VALUE,) + SETUP_MSG_SUFFIX)
 
+            # Keep Pad 15 (unassigned) lit in Cyan (17) for aesthetics
+            self._elements.pad_15.send_value(17)
+
             # Announce connection
             self.show_message('Minilab Mk2 Live 12 Loaded!')
 
