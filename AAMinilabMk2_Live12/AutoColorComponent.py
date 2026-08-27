@@ -8,8 +8,11 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 import re
+import logging
 from ableton.v2.base import listens, listens_group
 from ableton.v2.control_surface import Component
+
+logger = logging.getLogger(__name__)
 
 # Ableton Color Palette (0-69)
 COLORS = {
@@ -70,7 +73,7 @@ class AutoColorComponent(Component):
 
     @listens('tracks')
     def _on_tracks_changed(self):
-        print("AutoColor: _on_tracks_changed called")
+        logger.info("AutoColor: _on_tracks_changed called")
         self._on_track_name_changed.replace_subjects(self.song.tracks)
         
         # Immediately colorize any tracks that might have been added
@@ -79,7 +82,7 @@ class AutoColorComponent(Component):
 
     @listens_group('name')
     def _on_track_name_changed(self, track):
-        print("AutoColor: _on_track_name_changed called for track: " + str(track.name))
+        logger.info("AutoColor: _on_track_name_changed called for track: " + str(track.name))
         self._apply_color_to_track(track)
 
     def _apply_color_to_track(self, track):
@@ -88,15 +91,15 @@ class AutoColorComponent(Component):
             
         track_name = track.name
         
-        print("AutoColor: Checking track: " + str(track_name))
+        logger.info("AutoColor: Checking track: " + str(track_name))
         for regex, color_index, keyword in self._compiled_regexes:
             if regex.search(track_name):
-                print("AutoColor: Match found for keyword: " + str(keyword) + " color: " + str(color_index))
+                logger.info("AutoColor: Match found for keyword: " + str(keyword) + " color: " + str(color_index))
                 # Update the track color
                 if track.color_index != color_index:
                     try:
                         track.color_index = color_index
-                        print("AutoColor: Color applied successfully")
+                        logger.info("AutoColor: Color applied successfully")
                     except Exception as e:
-                        print("AutoColor: Error applying color: " + str(e))
+                        logger.info("AutoColor: Error applying color: " + str(e))
                 break # Stop searching after first match
