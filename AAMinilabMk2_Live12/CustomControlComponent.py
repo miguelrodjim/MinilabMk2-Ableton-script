@@ -321,7 +321,7 @@ class SimpleDeviceComponent(Component):
                 if hasattr(self, 'mixer') and self.mixer:
                     is_shift_pressed = self.mixer._shift_button.is_pressed
                 
-                multiplier = 0.005 if is_shift_pressed else 0.05
+                multiplier = 0.005 if is_shift_pressed else 0.10
                 delta = (p.max - p.min) * multiplier * value
                 p.value = max(p.min, min(p.max, p.value + delta))
             else:
