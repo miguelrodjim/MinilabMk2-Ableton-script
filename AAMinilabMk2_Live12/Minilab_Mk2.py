@@ -41,7 +41,7 @@ class Minilab_Mk2(ControlSurface):
             self._transport.set_play_element(self._elements.pad_play)
             self._transport.set_stop_element(self._elements.pad_stop)
             self._transport.set_record_element(self._elements.pad_record)
-            self._transport.set_metronome_element(self._elements.pad_metronome)
+            self._transport.set_metronome_element(self._elements.encoder_9_button)
             self._transport.set_enabled(True)
 
             # Mixer
