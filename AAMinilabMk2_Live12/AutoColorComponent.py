@@ -53,7 +53,10 @@ COLORS = {
     # VOCES (Verde oscuro)
     0x006400: ['voces'],
     # Elementos voces (Verde un poco más claro)
-    0x228B22: ['vox', 'voz', 'voz principal', 'principal', 'coro', 'armo', 'armo hi', 'armo low', 'rapeo', 'coros', 'voz doble', 'armo med']
+    0x228B22: ['vox', 'voz', 'voz principal', 'principal', 'coro', 'armo', 'armo hi', 'armo low', 'rapeo', 'coros', 'voz doble', 'armo med'],
+
+    # EFECTOS / FX (Azul clarito / Sky Blue)
+    0x87CEEB: ['fxs', 'fx']
 }
 
 class AutoColorComponent(Component):
