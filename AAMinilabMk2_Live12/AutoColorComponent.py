@@ -14,40 +14,41 @@ from ableton.v2.control_surface import Component
 
 logger = logging.getLogger(__name__)
 
-# Ableton Color Palette (0-69)
+# Ableton Color Palette mapped via RGB Hex.
+# Ableton automatically snaps to the closest palette color.
 COLORS = {
     # BATERÍAS (Morado oscuro / violeta)
-    55: ['drums', 'drum', 'bateria'],
+    0x8A2BE2: ['drums', 'drum', 'bateria'],
     # Elementos batería (Morado pastel)
-    50: ['kick', 'bombo', 'kck', 'snare', 'snr', 'caja', 'hihat', 'hi-hat', 'hat', 'aereos', 'ohs', 'toms', 'tom', 'ride'],
+    0xDDA0DD: ['kick', 'bombo', 'kck', 'snare', 'snr', 'caja', 'hihat', 'hi-hat', 'hat', 'aereos', 'ohs', 'toms', 'tom', 'ride'],
     
     # PERCUSIÓN (Morado rosáceo oscuro)
-    61: ['percs', 'percus', 'percussion'],
+    0xC71585: ['percs', 'percus', 'percussion'],
     # Elementos percusión (Morado rosáceo pastel)
-    49: ['udu', 'cajon', 'pandero', 'trash', 'cascabeles', 'pandereta', 'castañuela', 'bongo', 'timbales', 'bongos', 'timbal', 'triangulo', 'crotalo', 'crotalos'],
+    0xFFB6C1: ['udu', 'cajon', 'pandero', 'trash', 'cascabeles', 'pandereta', 'castañuela', 'bongo', 'timbales', 'bongos', 'timbal', 'triangulo', 'crotalo', 'crotalos'],
     
     # GUITARRAS ELÉCTRICAS (Rojo oscuro)
-    6: ['electricas', 'elecs'],
+    0x8B0000: ['electricas', 'elecs'],
     # Elementos guitarra eléctrica (Rojo pastel)
-    13: ['pwr', 'power', 'earp', 'lead', 'solo'],
+    0xFA8072: ['pwr', 'power', 'earp', 'lead', 'solo'],
     
     # GUITARRAS ACÚSTICAS (Marrón)
-    64: ['acusticas'],
+    0x8B4513: ['acusticas'],
     # Elementos acústicas (Marrón clarito pastel)
-    65: ['acc', 'acc rhy', 'acc arp', 'flam', 'clasica', 'flam arp', 'flam rhy'],
+    0xD2B48C: ['acc', 'acc rhy', 'acc arp', 'flam', 'clasica', 'flam arp', 'flam rhy'],
     
     # TECLAS / KEYS (Naranja)
-    9: ['keys'],
+    0xFF8C00: ['keys'],
     # Elementos keys (Mango / Naranja claro)
-    10: ['b3', 'organ', 'synth lead', 'synth bass', 'synth', 'arp2500', 'mini', 'buchla', 'juno', 'jupiter', 'piano', 'rhodes'],
+    0xFFB90F: ['b3', 'organ', 'synth lead', 'synth bass', 'synth', 'arp2500', 'mini', 'buchla', 'juno', 'jupiter', 'piano', 'rhodes'],
     
     # BAJO (Amarillo)
-    11: ['bass', 'bajo'],
+    0xFFFF00: ['bass', 'bajo'],
     
     # STRINGS (Marrón oscuro)
-    63: ['strings'],
+    0x5C4033: ['strings'],
     # Elementos strings (Marrón ocre dorado)
-    67: ['violin', 'viola', 'contrabajo', 'cello']
+    0xDAA520: ['violin', 'viola', 'contrabajo', 'cello']
 }
 
 class AutoColorComponent(Component):
@@ -62,11 +63,11 @@ class AutoColorComponent(Component):
         # Compile regex dictionary to optimize searching
         # We sort by length (descending) to match longer words first if regex doesn't catch it
         self._compiled_regexes = []
-        for color_index, keywords in COLORS.items():
+        for hex_color, keywords in COLORS.items():
             for keyword in keywords:
                 # \b ensures we only match whole words (e.g., matching 'bajo' won't trigger on 'contrabajo')
                 pattern = r'\b' + re.escape(keyword) + r'\b'
-                self._compiled_regexes.append((re.compile(pattern, re.IGNORECASE), color_index, keyword))
+                self._compiled_regexes.append((re.compile(pattern, re.IGNORECASE), hex_color, keyword))
 
         self._on_tracks_changed.subject = self.song
         self._on_tracks_changed()
@@ -92,17 +93,17 @@ class AutoColorComponent(Component):
         track_name = track.name
         
         logger.info("AutoColor: Checking track: " + str(track_name))
-        for regex, color_index, keyword in self._compiled_regexes:
+        for regex, hex_color, keyword in self._compiled_regexes:
             if regex.search(track_name):
-                logger.info("AutoColor: Match found for keyword: " + str(keyword) + " color: " + str(color_index))
+                logger.info("AutoColor: Match found for keyword: " + str(keyword) + " color: " + hex(hex_color))
                 # Update the track color deferred to avoid 'Changes cannot be triggered by notifications' error
-                if track.color_index != color_index:
-                    self._tasks.add(task.run(lambda t=track, c=color_index: self._do_color_change(t, c)))
+                if track.color != hex_color:
+                    self._tasks.add(task.run(lambda t=track, c=hex_color: self._do_color_change(t, c)))
                 break # Stop searching after first match
 
-    def _do_color_change(self, track, color_index):
+    def _do_color_change(self, track, hex_color):
         try:
-            track.color_index = color_index
+            track.color = hex_color
             logger.info("AutoColor: Color applied successfully")
         except Exception as e:
             logger.info("AutoColor: Error applying color: " + str(e))
