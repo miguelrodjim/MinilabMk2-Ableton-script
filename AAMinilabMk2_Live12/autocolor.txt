@@ -1,0 +1,59 @@
+# ==============================================================================
+# 🎨 AUTOCOLOR CONFIGURATION FOR ABLETON LIVE (MiniLab Mk2 Script)
+# ==============================================================================
+# INSTRUCCIONES:
+# - Cada línea define un color y las palabras clave asociadas a ese color.
+# - Formato: COLOR_HEX = palabra1, palabra2, palabra3...
+# - Puedes usar formato hexadecimal (0xRRGGBB o #RRGGBB).
+# - Las líneas que empiezan por '#' son comentarios y se ignoran.
+# - Puedes añadir o quitar palabras separadas por comas.
+# - Los cambios se detectan automáticamente al guardar este archivo.
+# ==============================================================================
+
+# BATERÍAS (Morado oscuro / violeta)
+0x8A2BE2 = drums, drum, bateria
+
+# ELEMENTOS BATERÍA (Morado pastel)
+0xDDA0DD = kick, bombo, kck, snare, snr, caja, hihat, hi-hat, hat, aereos, ohs, toms, tom, ride, platos, plato
+
+# PERCUSIÓN (Morado rosáceo oscuro)
+0xC71585 = percs, percus, percussion
+
+# ELEMENTOS PERCUSIÓN (Rosa pastel)
+0xFFB6C1 = udu, cajon, pandero, trash, cascabeles, pandereta, castañuela, bongo, timbales, bongos, timbal, triangulo, crotalo, crotalos, palmas, nudillos, nudillo
+
+# GUITARRAS ELÉCTRICAS (Rojo oscuro)
+0x8B0000 = electricas, elecs
+
+# ELEMENTOS GUITARRA ELÉCTRICA (Rojo pastel)
+0xE57373 = pwr, power, earp, lead, solo, gtr
+
+# GUITARRAS ACÚSTICAS (Marrón)
+0x8B4513 = acusticas
+
+# ELEMENTOS GUITARRA ACÚSTICA (Marrón claro pastel)
+0xD2B48C = acc, acc rhy, acc arp, flam, clasica, flam arp, flam rhy
+
+# TECLAS / KEYS (Naranja)
+0xFF8C00 = keys
+
+# ELEMENTOS KEYS & SYNTHS (Mango / Naranja claro)
+0xFFB90F = b3, organ, synth lead, synth bass, synth, arp2500, mini, buchla, juno, jupiter, piano, rhodes
+
+# BAJO (Amarillo)
+0xFFFF00 = bass, bajo
+
+# STRINGS (Marrón oscuro)
+0x5C4033 = strings
+
+# ELEMENTOS STRINGS (Marrón ocre dorado)
+0xDAA520 = violin, viola, contrabajo, cello
+
+# VOCES (Verde oscuro)
+0x006400 = voces
+
+# ELEMENTOS VOCES (Verde claro / lima)
+0x228B22 = vox, voz, voz principal, principal, coro, armo, armo hi, armo low, rapeo, coros, voz doble, armo med
+
+# EFECTOS / FX (Azul clarito / Sky Blue)
+0x87CEEB = fxs, fx
