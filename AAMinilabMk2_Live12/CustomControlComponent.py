@@ -276,8 +276,9 @@ class SimpleMixerComponent(Component):
 
 class SimpleDeviceComponent(Component):
     """
-    Custom Device component — maps 8 encoders to the first 8 parameters
-    of whatever device is currently selected on the selected track.
+    Custom Device component — maps 16 encoders to device parameters.
+    Encoder pushes (Knob 1 push CC 113, Knob 9 push CC 115) are released/unassigned here
+    and reserved for future per-plugin profiles.
     """
     _p1 = EncoderControl()
     _p2 = EncoderControl()
@@ -287,18 +288,30 @@ class SimpleDeviceComponent(Component):
     _p6 = EncoderControl()
     _p7 = EncoderControl()
     _p8 = EncoderControl()
+    _p9 = EncoderControl()
+    _p10 = EncoderControl()
+    _p11 = EncoderControl()
+    _p12 = EncoderControl()
+    _p13 = EncoderControl()
+    _p14 = EncoderControl()
+    _p15 = EncoderControl()
+    _p16 = EncoderControl()
 
     def __init__(self, *a, **k):
         super(SimpleDeviceComponent, self).__init__(*a, **k)
         self._encoders_list = [
             self._p1, self._p2, self._p3, self._p4,
-            self._p5, self._p6, self._p7, self._p8
+            self._p5, self._p6, self._p7, self._p8,
+            self._p9, self._p10, self._p11, self._p12,
+            self._p13, self._p14, self._p15, self._p16
         ]
 
     def set_encoder_elements(self, elements):
         for i, control in enumerate([
             self._p1, self._p2, self._p3, self._p4,
-            self._p5, self._p6, self._p7, self._p8
+            self._p5, self._p6, self._p7, self._p8,
+            self._p9, self._p10, self._p11, self._p12,
+            self._p13, self._p14, self._p15, self._p16
         ]):
             if i < len(elements):
                 control.set_control_element(elements[i])
@@ -346,6 +359,22 @@ class SimpleDeviceComponent(Component):
     def _on_p7(self, value, encoder): self._adjust_param(6, value)
     @_p8.value
     def _on_p8(self, value, encoder): self._adjust_param(7, value)
+    @_p9.value
+    def _on_p9(self, value, encoder): self._adjust_param(8, value)
+    @_p10.value
+    def _on_p10(self, value, encoder): self._adjust_param(9, value)
+    @_p11.value
+    def _on_p11(self, value, encoder): self._adjust_param(10, value)
+    @_p12.value
+    def _on_p12(self, value, encoder): self._adjust_param(11, value)
+    @_p13.value
+    def _on_p13(self, value, encoder): self._adjust_param(12, value)
+    @_p14.value
+    def _on_p14(self, value, encoder): self._adjust_param(13, value)
+    @_p15.value
+    def _on_p15(self, value, encoder): self._adjust_param(14, value)
+    @_p16.value
+    def _on_p16(self, value, encoder): self._adjust_param(15, value)
 
 
 class CustomControlComponent(Component):
@@ -459,3 +488,374 @@ class CustomControlComponent(Component):
                 self._scroll_h_accumulator -= threshold
             else:
                 self._scroll_h_accumulator += threshold
+
+
+class PluginProfile(object):
+    """
+    Base class for plugin-specific push-button profiles.
+    """
+    def matches_device(self, device):
+        raise NotImplementedError
+
+    def handle_button_press(self, button_id, device, logger):
+        raise NotImplementedError
+
+
+class FabFilterProQ3Profile(PluginProfile):
+    """
+    Plugin profile for FabFilter Pro-Q 3.
+    Binds:
+    - encoder_1_button / CC 113 -> 'Band 1 Enabled'
+    - encoder_9_button / CC 115 -> 'Band 6 Enabled'
+    """
+    BUTTON_TO_PARAM = {
+        'encoder_1_button': 'Band 1 Enabled',
+        'encoder_9_button': 'Band 6 Enabled',
+    }
+
+    def matches_device(self, device):
+        if not device:
+            return False
+        names_to_check = []
+        for attr in ('name', 'class_name', 'class_display_name'):
+            val = getattr(device, attr, None)
+            if val and isinstance(val, (str, type(u''))):
+                names_to_check.append(val.lower())
+
+        for n in names_to_check:
+            if 'pro-q 3' in n or 'pro-q3' in n:
+                return True
+            if 'pro-q' in n and '3' in n:
+                return True
+            if 'fabfilter pro-q' in n and '3' in n:
+                return True
+        return False
+
+    def handle_button_press(self, button_id, device, logger):
+        param_name = self.BUTTON_TO_PARAM.get(button_id)
+        if not param_name:
+            if logger:
+                logger.warning("Pro-Q 3 Profile: Unhandled button '{}'".format(button_id))
+            return False
+
+        target_param = None
+        if hasattr(device, 'parameters'):
+            for p in device.parameters:
+                p_name = getattr(p, 'name', None)
+                p_orig_name = getattr(p, 'original_name', None)
+                if p_name == param_name or p_orig_name == param_name:
+                    target_param = p
+                    break
+
+        dev_name = getattr(device, 'name', getattr(device, 'class_name', 'Pro-Q 3'))
+
+        if target_param is None:
+            if logger:
+                logger.warning("Pro-Q 3 Profile: Parameter '{}' is not exposed on device '{}'".format(param_name, dev_name))
+            return False
+
+        try:
+            mid_val = (target_param.min + target_param.max) / 2.0
+            if target_param.value > mid_val:
+                target_param.value = target_param.min
+            else:
+                target_param.value = target_param.max
+
+            if logger:
+                logger.info("Pro-Q 3 Profile: Toggled '{}' to {} on device '{}'".format(param_name, target_param.value, dev_name))
+            return True
+        except Exception as e:
+            if logger:
+                logger.error("Pro-Q 3 Profile: Failed toggling '{}' on device '{}': {}".format(param_name, dev_name, str(e)))
+            return False
+
+
+class FabFilterProC2Profile(PluginProfile):
+    """
+    Plugin profile for FabFilter Pro-C 2.
+    Binds:
+    - encoder_1_button / CC 113 -> 'Auto Gain'
+    - encoder_9_button / CC 115 -> 'Auto Release'
+    """
+    BUTTON_TO_PARAM = {
+        'encoder_1_button': 'Auto Gain',
+        'encoder_9_button': 'Auto Release',
+    }
+
+    def matches_device(self, device):
+        if not device:
+            return False
+        names_to_check = []
+        for attr in ('name', 'class_name', 'class_display_name'):
+            val = getattr(device, attr, None)
+            if val and isinstance(val, (str, type(u''))):
+                names_to_check.append(val.lower())
+
+        for n in names_to_check:
+            if 'pro-q' in n:
+                continue
+            if 'pro-c 2' in n or 'pro-c2' in n:
+                return True
+            if ('pro-c' in n or 'proc' in n) and '2' in n and 'fabfilter' in n:
+                return True
+        return False
+
+    def handle_button_press(self, button_id, device, logger):
+        param_name = self.BUTTON_TO_PARAM.get(button_id)
+        if not param_name:
+            if logger:
+                logger.warning("Pro-C 2 Profile: Unhandled button '{}'".format(button_id))
+            return False
+
+        target_param = None
+        if hasattr(device, 'parameters'):
+            for p in device.parameters:
+                p_name = getattr(p, 'name', None)
+                p_orig_name = getattr(p, 'original_name', None)
+                if p_name == param_name or p_orig_name == param_name:
+                    target_param = p
+                    break
+
+        dev_name = getattr(device, 'name', getattr(device, 'class_name', 'Pro-C 2'))
+
+        if target_param is None:
+            if logger:
+                logger.warning("Pro-C 2 Profile: Parameter '{}' is not exposed on device '{}'".format(param_name, dev_name))
+            return False
+
+        try:
+            mid_val = (target_param.min + target_param.max) / 2.0
+            if target_param.value > mid_val:
+                target_param.value = target_param.min
+            else:
+                target_param.value = target_param.max
+
+            if logger:
+                logger.info("Pro-C 2 Profile: Toggled '{}' to {} on device '{}'".format(param_name, target_param.value, dev_name))
+            return True
+        except Exception as e:
+            if logger:
+                logger.error("Pro-C 2 Profile: Failed toggling '{}' on device '{}': {}".format(param_name, dev_name, str(e)))
+            return False
+
+
+class UADxSSLEChannelStripProfile(PluginProfile):
+    """
+    Plugin profile for UADx SSL E Channel Strip.
+    Binds:
+    - encoder_1_button / CC 113 -> 'HF Bell'
+    - encoder_9_button / CC 115 -> 'LF Bell'
+    """
+    BUTTON_TO_PARAM = {
+        'encoder_1_button': 'HF Bell',
+        'encoder_9_button': 'LF Bell',
+    }
+
+    def matches_device(self, device):
+        if not device:
+            return False
+        names_to_check = []
+        for attr in ('name', 'class_name', 'class_display_name'):
+            val = getattr(device, attr, None)
+            if val and isinstance(val, (str, type(u''))):
+                names_to_check.append(val.lower())
+
+        if not names_to_check:
+            return False
+
+        has_uad = any('uad' in n or 'uadx' in n for n in names_to_check)
+        has_ssl_e = any(
+            'ssl e channel strip' in n or
+            ('ssl e' in n and 'channel strip' in n) or
+            ('ssl' in n and 'e channel strip' in n) or
+            ('ssl' in n and 'e-channel strip' in n)
+            for n in names_to_check
+        )
+
+        return has_uad and has_ssl_e
+
+    def handle_button_press(self, button_id, device, logger):
+        param_name = self.BUTTON_TO_PARAM.get(button_id)
+        if not param_name:
+            if logger:
+                logger.warning("UADx SSL E Channel Strip Profile: Unhandled button '{}'".format(button_id))
+            return False
+
+        target_param = None
+        if hasattr(device, 'parameters'):
+            for p in device.parameters:
+                p_name = getattr(p, 'name', None)
+                p_orig_name = getattr(p, 'original_name', None)
+                if p_name == param_name or p_orig_name == param_name:
+                    target_param = p
+                    break
+
+        dev_name = getattr(device, 'name', getattr(device, 'class_name', 'UADx SSL E Channel Strip'))
+
+        if target_param is None:
+            if logger:
+                logger.warning("UADx SSL E Channel Strip Profile: Parameter '{}' is not exposed on device '{}'".format(param_name, dev_name))
+            return False
+
+        try:
+            mid_val = (target_param.min + target_param.max) / 2.0
+            if target_param.value > mid_val:
+                target_param.value = target_param.min
+            else:
+                target_param.value = target_param.max
+
+            if logger:
+                logger.info("UADx SSL E Channel Strip Profile: Toggled '{}' to {} on device '{}'".format(param_name, target_param.value, dev_name))
+            return True
+        except Exception as e:
+            if logger:
+                logger.error("UADx SSL E Channel Strip Profile: Failed toggling '{}' on device '{}': {}".format(param_name, dev_name, str(e)))
+            return False
+
+
+class UADxLA6176ChannelStripProfile(PluginProfile):
+    """
+    Plugin profile for UADx LA-6176 Channel Strip.
+    Binds:
+    - encoder_1_button / CC 113 -> 'EQ Hi Freq'
+    - encoder_9_button / CC 115 -> 'EQ Lo Freq'
+    Cycles parameter through 3 states: [min, (min+max)/2, max].
+    """
+    BUTTON_TO_PARAM = {
+        'encoder_1_button': 'EQ Hi Freq',
+        'encoder_9_button': 'EQ Lo Freq',
+    }
+
+    def matches_device(self, device):
+        if not device:
+            return False
+        names_to_check = []
+        for attr in ('name', 'class_name', 'class_display_name'):
+            val = getattr(device, attr, None)
+            if val and isinstance(val, (str, type(u''))):
+                names_to_check.append(val.lower())
+
+        if not names_to_check:
+            return False
+
+        for n in names_to_check:
+            if 'la-2a' in n or 'la2a' in n or 'la 2a' in n:
+                return False
+
+        has_uad = any('uad' in n or 'uadx' in n for n in names_to_check)
+        has_6176 = any(
+            'la-6176' in n or
+            'la 6176' in n or
+            '6176 channel strip' in n or
+            '6176' in n
+            for n in names_to_check
+        )
+
+        return has_uad and has_6176
+
+    def handle_button_press(self, button_id, device, logger):
+        param_name = self.BUTTON_TO_PARAM.get(button_id)
+        if not param_name:
+            if logger:
+                logger.warning("UADx LA-6176 Channel Strip Profile: Unhandled button '{}'".format(button_id))
+            return False
+
+        target_param = None
+        if hasattr(device, 'parameters'):
+            for p in device.parameters:
+                p_name = getattr(p, 'name', None)
+                p_orig_name = getattr(p, 'original_name', None)
+                if p_name == param_name or p_orig_name == param_name:
+                    target_param = p
+                    break
+
+        dev_name = getattr(device, 'name', getattr(device, 'class_name', 'UADx LA-6176 Channel Strip'))
+
+        if target_param is None:
+            if logger:
+                logger.warning("UADx LA-6176 Channel Strip Profile: Parameter '{}' is not exposed on device '{}'".format(param_name, dev_name))
+            return False
+
+        try:
+            min_val = float(target_param.min)
+            max_val = float(target_param.max)
+            mid_val = min_val + (max_val - min_val) / 2.0
+            states = [min_val, mid_val, max_val]
+
+            curr_val = float(target_param.value)
+            distances = [abs(curr_val - s) for s in states]
+            closest_index = distances.index(min(distances))
+
+            next_index = (closest_index + 1) % len(states)
+            target_param.value = states[next_index]
+
+            if logger:
+                logger.info("UADx LA-6176 Channel Strip Profile: Cycled '{}' to {} on device '{}'".format(param_name, target_param.value, dev_name))
+            return True
+        except Exception as e:
+            if logger:
+                logger.error("UADx LA-6176 Channel Strip Profile: Failed cycling '{}' on device '{}': {}".format(param_name, dev_name, str(e)))
+            return False
+
+
+class PluginPushComponent(Component):
+    """
+    Component managing plugin-specific encoder push button profiles.
+    """
+    _encoder_1_button = ButtonControl()
+    _encoder_9_button = ButtonControl()
+
+    def __init__(self, *a, **k):
+        super(PluginPushComponent, self).__init__(*a, **k)
+        self._profiles = [
+            FabFilterProQ3Profile(),
+            FabFilterProC2Profile(),
+            UADxSSLEChannelStripProfile(),
+            UADxLA6176ChannelStripProfile(),
+        ]
+
+    def set_encoder_1_button(self, element):
+        self._encoder_1_button.set_control_element(element)
+
+    def set_encoder_9_button(self, element):
+        self._encoder_9_button.set_control_element(element)
+
+    @_encoder_1_button.pressed
+    def _on_encoder_1_pressed(self, button):
+        self._handle_push('encoder_1_button')
+
+    @_encoder_9_button.pressed
+    def _on_encoder_9_pressed(self, button):
+        self._handle_push('encoder_9_button')
+
+    def _get_selected_device(self):
+        try:
+            track = self.song.view.selected_track
+            if track and hasattr(track, 'view') and track.view:
+                return track.view.selected_device
+        except Exception:
+            pass
+        return None
+
+    def _handle_push(self, button_id):
+        import logging
+        logger = logging.getLogger(__name__)
+
+        device = self._get_selected_device()
+        if not device:
+            logger.warning("Plugin Push: No device selected for push button '{}'".format(button_id))
+            return
+
+        matched_profile = None
+        for profile in self._profiles:
+            if profile.matches_device(device):
+                matched_profile = profile
+                break
+
+        if not matched_profile:
+            dev_name = getattr(device, 'name', getattr(device, 'class_name', 'Unknown Device'))
+            logger.warning("Plugin Push: Selected device '{}' has no matching plugin profile".format(dev_name))
+            return
+
+        matched_profile.handle_button_press(button_id, device, logger)
+
