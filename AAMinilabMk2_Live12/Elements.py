@@ -19,7 +19,8 @@ class Colors:
         StopOff = Color(0)       # Off
         RecordOn = Color(1)      # Red
         RecordOff = Color(0)     # Off
-        LoopOn = Color(16)       # Blue
+        SoloOn = Color(16)       # Blue
+        LoopOn = SoloOn          # Alias for backward compatibility
         LoopOff = Color(0)       # Off
         MetronomeOn = Color(17)  # Magenta / Purple
         MetronomeOff = Color(0)  # Off
@@ -36,15 +37,15 @@ class MinilabPadButtonElement(ButtonElement):
     def send_value(self, value, force=False, channel=None):
         if value is None:
             return
-            
+
         try:
             val = int(value)
         except (TypeError, ValueError):
             val = 0
-            
+
         # Call super with the safe int to avoid C++ crashes if a string was passed by mistake
         super(MinilabPadButtonElement, self).send_value(val, force, channel)
-        
+
         sysex_msg = (240, 0, 32, 107, 127, 66, 2, 0, 16, 112 + self._pad_index, val, 247)
         self.send_midi(sysex_msg)
 
@@ -76,13 +77,9 @@ class Elements(object):
     def __init__(self):
         super(Elements, self).__init__()
 
-        # Encoders
+        # Encoders (1-16)
         self.encoders = []
         for i, cc in enumerate(ENCODER_CCS):
-            if cc in (52, 53): # Free Knobs 13 and 14 for manual MIDI mapping
-                self.encoders.append(None)
-                continue
-                
             encoder = EncoderElement(
                 MIDI_CC_TYPE,
                 ENCODER_CHANNEL,
@@ -92,27 +89,10 @@ class Elements(object):
             )
             self.encoders.append(encoder)
 
-        valid_encoders = [e for e in self.encoders if e is not None]
         self.encoders_matrix = ButtonMatrixElement(
-            rows=[valid_encoders],
+            rows=[self.encoders],
             name='Encoders_Matrix'
         )
-
-        # Device Encoders (Knobs 1-8)
-        self.device_encoders_matrix = ButtonMatrixElement(
-            rows=[self.encoders[0:8]],
-            name='Device_Encoders_Matrix'
-        )
-
-        # Specific Mixing/Navigation Encoders (Knobs 9-16)
-        self.encoder_cue_volume = self.encoders[8] # Knob 9
-        self.encoder_clip_gain = self.encoders[9] # Knob 10
-        self.encoder_pan = self.encoders[10] # Knob 11
-        self.encoder_volume = self.encoders[11] # Knob 12
-        self.encoder_custom = self.encoders[12] # Knob 13
-        self.encoder_zoom = self.encoders[13] # Knob 14
-        self.encoder_scroll_v = self.encoders[14] # Knob 15
-        self.encoder_scroll_h = self.encoders[15] # Knob 16
 
         # Clickable Encoder Buttons
         self.encoder_1_button = ButtonElement(True, MIDI_CC_TYPE, PAD_CHANNEL, ENCODER_PUSH_1, name='Encoder_1_Button')
@@ -123,7 +103,7 @@ class Elements(object):
         for i, note in enumerate(PAD_NOTES):
             pad = ButtonElement(True, MIDI_NOTE_TYPE, PAD_CHANNEL, note, name='Pad_{}'.format(i + 1))
             self.pads_bank_1.append(pad)
-        
+
         self.pads_bank_1_matrix = ButtonMatrixElement(
             rows=[self.pads_bank_1],
             name='Pads_Bank_1_Matrix'

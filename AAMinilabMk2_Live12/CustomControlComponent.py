@@ -23,7 +23,7 @@ class SimpleTransportComponent(Component):
         self._on_record_mode_changed.subject = self.song
         self._on_metronome_changed.subject = self.song
         self._on_loop_changed.subject = self.song
-        
+
         self._blink_state = False
         self._blink_task = self._tasks.add(task.loop(
             task.sequence(
@@ -32,7 +32,7 @@ class SimpleTransportComponent(Component):
             )
         ))
         # Remove kill() so it runs constantly and we update states inside _toggle_blink
-        
+
         self._update_all_colors()
 
     def set_play_element(self, element):
@@ -83,7 +83,7 @@ class SimpleTransportComponent(Component):
     # --- Observers for Dynamic Colors ---
     def _toggle_blink(self):
         self._blink_state = not self._blink_state
-        
+
         # Record Button Blinking
         if self.song.record_mode:
             self._record_button.color = 'Transport.RecordOn' if self._blink_state else 'Transport.PlayOff'
@@ -97,7 +97,7 @@ class SimpleTransportComponent(Component):
         else:
             self._play_button.color = 'Transport.PlayOn' # Green by default
             self._stop_button.color = 'DefaultButton.On' # White by default
-            
+
         # Metronome Button Blinking
         if self.song.metronome:
             self._metronome_button.color = 'Transport.MetronomeOn' if self._blink_state else 'Transport.PlayOff'
@@ -122,7 +122,7 @@ class SimpleTransportComponent(Component):
     @listens('loop')
     def _on_loop_changed(self):
         self._loop_button.color = 'Transport.LoopOn' if self.song.loop else 'Transport.LoopOff'
-        
+
     def _update_all_colors(self):
         self._on_playing_changed()
         self._on_record_mode_changed()
@@ -134,17 +134,14 @@ class SimpleMixerComponent(Component):
     """
     Custom Mixer component for selected-track volume, pan, mute, solo, arm, and cue volume.
     """
-    _volume_encoder = EncoderControl()
-    _pan_encoder = EncoderControl()
     _mute_button = ButtonControl(color='Transport.StopOn', pressed_color='Transport.StopOn') # Yellow
-    _solo_button = ButtonControl(color='Transport.LoopOn', pressed_color='Transport.LoopOn') # Blue
+    _solo_button = ButtonControl(color='Transport.SoloOn', pressed_color='Transport.SoloOn') # Blue
     _arm_button = ButtonControl(color='DefaultButton.On', pressed_color='DefaultButton.On') # White
-    _cue_volume_encoder = EncoderControl()
     _shift_button = ButtonControl(color='Transport.ShiftOn', pressed_color='Transport.ShiftOn') # Purple
 
     def __init__(self, *a, **k):
         super(SimpleMixerComponent, self).__init__(*a, **k)
-        
+
         self._blink_state = False
         self._blink_task = self._tasks.add(task.loop(
             task.sequence(
@@ -152,18 +149,12 @@ class SimpleMixerComponent(Component):
                 task.wait(0.3)
             )
         ))
-        
+
         self._on_selected_track_changed.subject = self.song.view
         self._on_selected_track_changed()
 
     def set_shift_button(self, element):
         self._shift_button.set_control_element(element)
-
-    def set_volume_element(self, element):
-        self._volume_encoder.set_control_element(element)
-
-    def set_pan_element(self, element):
-        self._pan_encoder.set_control_element(element)
 
     def set_mute_element(self, element):
         self._mute_button.set_control_element(element)
@@ -174,27 +165,8 @@ class SimpleMixerComponent(Component):
     def set_arm_element(self, element):
         self._arm_button.set_control_element(element)
 
-    def set_cue_volume_element(self, element):
-        self._cue_volume_encoder.set_control_element(element)
-
     def _get_selected_track(self):
         return self.song.view.selected_track
-
-    @_volume_encoder.value
-    def _on_volume_changed(self, value, encoder):
-        track = self._get_selected_track()
-        if track:
-            multiplier = 0.003 if self._shift_button.is_pressed else 0.03
-            delta = value * multiplier
-            track.mixer_device.volume.value = max(0.0, min(1.0, track.mixer_device.volume.value + delta))
-
-    @_pan_encoder.value
-    def _on_pan_changed(self, value, encoder):
-        track = self._get_selected_track()
-        if track:
-            multiplier = 0.005 if self._shift_button.is_pressed else 0.05
-            delta = value * multiplier
-            track.mixer_device.panning.value = max(-1.0, min(1.0, track.mixer_device.panning.value + delta))
 
     @_mute_button.pressed
     def _on_mute_pressed(self, button):
@@ -227,12 +199,6 @@ class SimpleMixerComponent(Component):
         if track and track.can_be_armed:
             track.arm = not track.arm
 
-    @_cue_volume_encoder.value
-    def _on_cue_volume_changed(self, value, encoder):
-        delta = value * 0.01
-        cue = self.song.master_track.mixer_device.cue_volume
-        cue.value = max(0.0, min(1.0, cue.value + delta))
-
     # --- Listeners for dynamic colors ---
     @listens('selected_track')
     def _on_selected_track_changed(self):
@@ -248,9 +214,9 @@ class SimpleMixerComponent(Component):
         self._blink_state = not self._blink_state
         track = self.song.view.selected_track
         if track and track != self.song.master_track and track.solo:
-            self._solo_button.color = 'Transport.LoopOn' if self._blink_state else 'Transport.PlayOff'
+            self._solo_button.color = 'Transport.SoloOn' if self._blink_state else 'Transport.PlayOff'
         else:
-            self._solo_button.color = 'Transport.LoopOn' # Default Blue
+            self._solo_button.color = 'Transport.SoloOn' # Default Blue
 
     @listens('solo')
     def _on_solo_changed(self):
@@ -333,7 +299,7 @@ class SimpleDeviceComponent(Component):
                 is_shift_pressed = False
                 if hasattr(self, 'mixer') and self.mixer:
                     is_shift_pressed = self.mixer._shift_button.is_pressed
-                
+
                 multiplier = 0.005 if is_shift_pressed else 0.10
                 delta = (p.max - p.min) * multiplier * value
                 p.value = max(p.min, min(p.max, p.value + delta))
@@ -375,119 +341,6 @@ class SimpleDeviceComponent(Component):
     def _on_p15(self, value, encoder): self._adjust_param(14, value)
     @_p16.value
     def _on_p16(self, value, encoder): self._adjust_param(15, value)
-
-
-class CustomControlComponent(Component):
-    """
-    Handles custom encoder mappings: Clip Gain and Scrolling.
-    """
-    _clip_gain_encoder = EncoderControl()
-    _scroll_v_encoder = EncoderControl()
-    _scroll_h_encoder = EncoderControl()
-
-    def __init__(self, *a, **k):
-        super(CustomControlComponent, self).__init__(*a, **k)
-        self._scroll_h_accumulator = 0.0
-        self._scroll_v_accumulator = 0.0
-
-    def set_clip_gain_element(self, element):
-        self._clip_gain_encoder.set_control_element(element)
-
-    def set_scroll_v_element(self, element):
-        self._scroll_v_encoder.set_control_element(element)
-
-    def set_scroll_h_element(self, element):
-        self._scroll_h_encoder.set_control_element(element)
-
-    @_clip_gain_encoder.value
-    def _on_clip_gain(self, value, encoder):
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info("Clip Gain Turn: {}".format(value))
-        clip = self.song.view.detail_clip
-        if clip:
-            logger.info("Clip: {}, is_audio_clip: {}".format(clip, getattr(clip, 'is_audio_clip', False) if clip else None))
-            if clip.is_audio_clip:
-                is_shift_pressed = False
-                if hasattr(self, 'mixer') and self.mixer:
-                    is_shift_pressed = self.mixer._shift_button.is_pressed
-                
-                multiplier = 0.01 if is_shift_pressed else 0.05
-                delta = value * multiplier
-                try:
-                    clip.gain = max(0.0, clip.gain + delta)
-                    logger.info("Gain set to: {:.2f}".format(clip.gain))
-                except Exception as e:
-                    logger.error("Error setting gain: {}".format(str(e)))
-        else:
-            logger.info("No detail_clip selected.")
-
-    @_scroll_v_encoder.value
-    def _on_scroll_v(self, value, encoder):
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info("Knob 15 (Scroll V) Turn: {}".format(value))
-        
-        # Check if Shift is pressed via the mixer reference
-        is_shift_pressed = False
-        if hasattr(self, 'mixer') and self.mixer:
-            is_shift_pressed = self.mixer._shift_button.is_pressed
-        
-        self._scroll_v_accumulator += value
-        
-        # If Shift is pressed, require more physical rotation (higher threshold)
-        threshold = 0.15 if is_shift_pressed else 0.05
-        
-        if abs(self._scroll_v_accumulator) >= threshold:
-            try:
-                # Always jump by 1 full bar
-                bar_length = float(self.song.signature_numerator)
-                delta = bar_length if self._scroll_v_accumulator > 0 else -bar_length
-                
-                new_time = max(0.0, self.song.current_song_time + delta)
-                self.song.current_song_time = new_time
-                logger.info("Scrubbed to: {} (Shift: {})".format(new_time, is_shift_pressed))
-            except Exception as e:
-                logger.error("Scrub error: {}".format(str(e)))
-            
-            if self._scroll_v_accumulator > 0:
-                self._scroll_v_accumulator -= threshold
-            else:
-                self._scroll_v_accumulator += threshold
-
-    @_scroll_h_encoder.value
-    def _on_scroll_h(self, value, encoder):
-        import logging
-        logger = logging.getLogger(__name__)
-        logger.info("Knob 16 (Scroll H) Turn: {}".format(value))
-        
-        self._scroll_h_accumulator += value
-        
-        # Check if Shift is pressed via the mixer reference
-        is_shift_pressed = False
-        if hasattr(self, 'mixer') and self.mixer:
-            is_shift_pressed = self.mixer._shift_button.is_pressed
-            
-        # Increase threshold to 0.45 (approx 30 clicks) if Shift is pressed, otherwise 0.15 (approx 10 clicks)
-        threshold = 0.45 if is_shift_pressed else 0.15
-        
-        if abs(self._scroll_h_accumulator) >= threshold:
-            try:
-                tracks = list(self.song.visible_tracks)
-                current_track = self.song.view.selected_track
-                if current_track in tracks:
-                    index = tracks.index(current_track)
-                    if self._scroll_h_accumulator > 0 and index < len(tracks) - 1:
-                        self.song.view.selected_track = tracks[index + 1]
-                    elif self._scroll_h_accumulator < 0 and index > 0:
-                        self.song.view.selected_track = tracks[index - 1]
-            except Exception:
-                pass
-            
-            if self._scroll_h_accumulator > 0:
-                self._scroll_h_accumulator -= threshold
-            else:
-                self._scroll_h_accumulator += threshold
 
 
 class PluginProfile(object):
@@ -858,4 +711,3 @@ class PluginPushComponent(Component):
             return
 
         matched_profile.handle_button_press(button_id, device, logger)
-
