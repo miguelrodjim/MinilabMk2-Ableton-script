@@ -19,12 +19,7 @@ class Colors:
         StopOff = Color(0)       # Off
         RecordOn = Color(1)      # Red
         RecordOff = Color(0)     # Off
-        SoloOn = Color(16)       # Blue
-        LoopOn = SoloOn          # Alias for backward compatibility
-        LoopOff = Color(0)       # Off
-        MetronomeOn = Color(17)  # Magenta / Purple
-        MetronomeOff = Color(0)  # Off
-        TapTempo = Color(127)    # White
+        SoloOn = Color(16)       # Blue (used by mixer solo)
         ShiftOn = Color(17)      # Purple
 
 skin = Skin(Colors)
@@ -77,7 +72,7 @@ class Elements(object):
     def __init__(self):
         super(Elements, self).__init__()
 
-        # Encoders (1-16)
+        # Encoders (All 16 encoders control parameters of the selected device)
         self.encoders = []
         for i, cc in enumerate(ENCODER_CCS):
             encoder = EncoderElement(
@@ -89,8 +84,9 @@ class Elements(object):
             )
             self.encoders.append(encoder)
 
+        valid_encoders = [e for e in self.encoders if e is not None]
         self.encoders_matrix = ButtonMatrixElement(
-            rows=[self.encoders],
+            rows=[valid_encoders],
             name='Encoders_Matrix'
         )
 

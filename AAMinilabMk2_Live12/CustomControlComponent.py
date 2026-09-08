@@ -13,16 +13,11 @@ class SimpleTransportComponent(Component):
     _play_button = ButtonControl(color='Transport.PlayOn')
     _stop_button = ButtonControl(color='DefaultButton.On') # White always
     _record_button = ButtonControl(color='Transport.RecordOn')
-    _metronome_button = ButtonControl(color='Transport.MetronomeOn') # Cyan
-    _loop_button = ButtonControl(color='Transport.PlayOff')
-    _tap_tempo_button = ButtonControl(color='Transport.TapTempo', pressed_color='Transport.TapTempo')
 
     def __init__(self, *a, **k):
         super(SimpleTransportComponent, self).__init__(*a, **k)
         self._on_playing_changed.subject = self.song
         self._on_record_mode_changed.subject = self.song
-        self._on_metronome_changed.subject = self.song
-        self._on_loop_changed.subject = self.song
 
         self._blink_state = False
         self._blink_task = self._tasks.add(task.loop(
@@ -31,7 +26,6 @@ class SimpleTransportComponent(Component):
                 task.wait(0.3)
             )
         ))
-        # Remove kill() so it runs constantly and we update states inside _toggle_blink
 
         self._update_all_colors()
 
@@ -44,15 +38,6 @@ class SimpleTransportComponent(Component):
     def set_record_element(self, element):
         self._record_button.set_control_element(element)
 
-    def set_metronome_element(self, element):
-        self._metronome_button.set_control_element(element)
-
-    def set_loop_element(self, element):
-        self._loop_button.set_control_element(element)
-
-    def set_tap_tempo_element(self, element):
-        self._tap_tempo_button.set_control_element(element)
-
     @_play_button.pressed
     def _on_play_pressed(self, button):
         self.song.is_playing = not self.song.is_playing
@@ -64,21 +49,6 @@ class SimpleTransportComponent(Component):
     @_record_button.pressed
     def _on_record_pressed(self, button):
         self.song.record_mode = not self.song.record_mode
-
-    @_metronome_button.pressed
-    def _on_metronome_pressed(self, button):
-        self.song.metronome = not self.song.metronome
-
-    @_loop_button.pressed
-    def _on_loop_pressed(self, button):
-        self.song.loop = not self.song.loop
-
-    @_tap_tempo_button.pressed
-    def _on_tap_tempo_pressed(self, button):
-        try:
-            self.song.tap_tempo()
-        except AttributeError:
-            pass
 
     # --- Observers for Dynamic Colors ---
     def _toggle_blink(self):
@@ -98,12 +68,6 @@ class SimpleTransportComponent(Component):
             self._play_button.color = 'Transport.PlayOn' # Green by default
             self._stop_button.color = 'DefaultButton.On' # White by default
 
-        # Metronome Button Blinking
-        if self.song.metronome:
-            self._metronome_button.color = 'Transport.MetronomeOn' if self._blink_state else 'Transport.PlayOff'
-        else:
-            self._metronome_button.color = 'Transport.MetronomeOn' # Cyan by default
-
     @listens('is_playing')
     def _on_playing_changed(self):
         # We handle Play button color in _toggle_blink
@@ -114,25 +78,14 @@ class SimpleTransportComponent(Component):
         # We handle Record button color in _toggle_blink
         pass
 
-    @listens('metronome')
-    def _on_metronome_changed(self):
-        # We handle Metronome button color in _toggle_blink
-        pass
-
-    @listens('loop')
-    def _on_loop_changed(self):
-        self._loop_button.color = 'Transport.LoopOn' if self.song.loop else 'Transport.LoopOff'
-
     def _update_all_colors(self):
         self._on_playing_changed()
         self._on_record_mode_changed()
-        self._on_metronome_changed()
-        self._on_loop_changed()
 
 
 class SimpleMixerComponent(Component):
     """
-    Custom Mixer component for selected-track volume, pan, mute, solo, arm, and cue volume.
+    Custom Mixer component for selected-track mute, solo, arm, and shift.
     """
     _mute_button = ButtonControl(color='Transport.StopOn', pressed_color='Transport.StopOn') # Yellow
     _solo_button = ButtonControl(color='Transport.SoloOn', pressed_color='Transport.SoloOn') # Blue
@@ -341,6 +294,9 @@ class SimpleDeviceComponent(Component):
     def _on_p15(self, value, encoder): self._adjust_param(14, value)
     @_p16.value
     def _on_p16(self, value, encoder): self._adjust_param(15, value)
+
+
+
 
 
 class PluginProfile(object):

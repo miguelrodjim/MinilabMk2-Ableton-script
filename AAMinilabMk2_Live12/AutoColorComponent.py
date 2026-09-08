@@ -113,8 +113,6 @@ class AutoColorComponent(Component):
         self._load_config()
 
         self._on_tracks_changed.subject = self.song
-        if hasattr(self.song, 'add_return_tracks_listener'):
-            self._on_return_tracks_changed.subject = self.song
         self._on_tracks_changed()
 
     def _parse_hex_color(self, hex_str):
@@ -195,81 +193,50 @@ class AutoColorComponent(Component):
             except Exception as e:
                 logger.error("AutoColor: Error checking file mtime: " + str(e))
 
-    def _all_tracks(self):
-        tracks = []
-        try:
-            if hasattr(self, 'song') and self.song:
-                if hasattr(self.song, 'tracks'):
-                    tracks.extend(self.song.tracks)
-                if hasattr(self.song, 'return_tracks'):
-                    tracks.extend(self.song.return_tracks)
-                if hasattr(self.song, 'master_track') and self.song.master_track:
-                    tracks.append(self.song.master_track)
-        except Exception:
-            pass
-        return tracks
-
     def _track_supports_arrangement_clips(self, track):
         if not track:
             return False
         try:
             if hasattr(self, 'song') and self.song:
-                if track == getattr(self.song, 'master_track', None):
+                if track == getattr(self.song, 'master_track', None) or track == getattr(self.song, 'main_track', None):
                     return False
-                if hasattr(self.song, 'return_tracks') and track in self.song.return_tracks:
+                if track in getattr(self.song, 'return_tracks', []):
                     return False
         except Exception:
             pass
+
         if getattr(track, 'is_foldable', False):
             return False
-        try:
-            _ = track.arrangement_clips
-            return True
-        except (AttributeError, RuntimeError, Exception):
+
+        can_audio = getattr(track, 'can_have_audio_clips', None)
+        can_midi = getattr(track, 'can_have_midi_clips', None)
+        if can_audio is False and can_midi is False:
             return False
+
+        return hasattr(track, 'add_arrangement_clips_listener')
 
     def _get_arrangement_clips(self, track):
         if not self._track_supports_arrangement_clips(track):
             return []
         try:
-            return list(track.arrangement_clips)
-        except Exception:
+            clips = getattr(track, 'arrangement_clips', None)
+            return list(clips) if clips is not None else []
+        except (RuntimeError, AttributeError, Exception):
             return []
-
-    def _get_clip_slots(self, track):
-        if getattr(track, 'is_foldable', False):
-            return []
-        try:
-            if hasattr(self, 'song') and self.song:
-                if track == getattr(self.song, 'master_track', None):
-                    return []
-                if hasattr(self.song, 'return_tracks') and track in self.song.return_tracks:
-                    return []
-            if hasattr(track, 'clip_slots'):
-                return list(track.clip_slots)
-        except Exception:
-            return []
-        return []
 
     @listens('tracks')
     def _on_tracks_changed(self):
         logger.info("AutoColor: _on_tracks_changed called")
         self._reload_if_modified()
-        all_tracks = self._all_tracks()
-        self._on_track_name_changed.replace_subjects(all_tracks)
+        self._on_track_name_changed.replace_subjects(self.song.tracks)
 
         # Listen for new / modified arrangement clips on tracks that support it
         tracks_with_arr = [t for t in self.song.tracks if self._track_supports_arrangement_clips(t)]
         self._on_arrangement_clips_changed.replace_subjects(tracks_with_arr)
 
         # Immediately colorize any tracks and clips that might have been added
-        for track in all_tracks:
+        for track in self.song.tracks:
             self._apply_color_to_track(track)
-
-    @listens('return_tracks')
-    def _on_return_tracks_changed(self):
-        logger.info("AutoColor: _on_return_tracks_changed called")
-        self._on_tracks_changed()
 
     @listens_group('name')
     def _on_track_name_changed(self, track):
@@ -282,26 +249,18 @@ class AutoColorComponent(Component):
         self._apply_color_to_track(track)
 
     def _needs_color_update(self, track, hex_color):
-        try:
-            if track.color != hex_color:
-                return True
-        except Exception:
-            return False
-
+        if getattr(track, 'color', None) != hex_color:
+            return True
         for clip in self._get_arrangement_clips(track):
+            if clip and getattr(clip, 'color', None) != hex_color:
+                return True
+        if hasattr(track, 'clip_slots'):
             try:
-                if clip and clip.color != hex_color:
-                    return True
+                for slot in track.clip_slots:
+                    if slot and getattr(slot, 'has_clip', False) and getattr(slot, 'clip', None) and getattr(slot.clip, 'color', None) != hex_color:
+                        return True
             except Exception:
                 pass
-
-        for slot in self._get_clip_slots(track):
-            try:
-                if slot and slot.has_clip and slot.clip and slot.clip.color != hex_color:
-                    return True
-            except Exception:
-                pass
-
         return False
 
     def _apply_color_to_track(self, track):
@@ -332,15 +291,19 @@ class AutoColorComponent(Component):
         # Arrangement clips (Arrangement View)
         for clip in self._get_arrangement_clips(track):
             try:
-                if clip and clip.color != hex_color:
+                if clip and getattr(clip, 'color', None) != hex_color:
                     clip.color = hex_color
             except Exception as e:
                 logger.debug("AutoColor: Error setting arrangement clip color: " + str(e))
 
         # Session clip slots (Session View)
-        for slot in self._get_clip_slots(track):
+        if hasattr(track, 'clip_slots'):
             try:
-                if slot and slot.has_clip and slot.clip and slot.clip.color != hex_color:
-                    slot.clip.color = hex_color
-            except Exception as e:
-                logger.debug("AutoColor: Error setting session clip color: " + str(e))
+                for slot in track.clip_slots:
+                    try:
+                        if slot and getattr(slot, 'has_clip', False) and getattr(slot, 'clip', None) and getattr(slot.clip, 'color', None) != hex_color:
+                            slot.clip.color = hex_color
+                    except Exception as e:
+                        logger.debug("AutoColor: Error setting session clip color: " + str(e))
+            except Exception:
+                pass
