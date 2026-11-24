@@ -1,6 +1,7 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
-from ableton.v2.control_surface import ControlSurface
+from ableton.v2.control_surface import ControlSurface, Layer
+from ableton.v2.control_surface.component import Component
 from _Arturia.ArturiaControlSurface import LIVE_MODE_MSG_HEAD, ON_VALUE, OFF_VALUE, SETUP_MSG_PREFIX, LOAD_MEMORY_COMMAND, SETUP_MSG_SUFFIX
 
 from .Elements import Elements
@@ -12,7 +13,6 @@ class Minilab_Mk2(ControlSurface):
     """
     Minilab Mk2 Control Surface script for Ableton Live 12.
     Uses custom bypass components to avoid Live 12 v2 bugs.
-    All 16 encoders map to selected device parameters.
     """
 
     def __init__(self, c_instance, *a, **k):
@@ -38,16 +38,17 @@ class Minilab_Mk2(ControlSurface):
             self._mixer.set_mute_element(self._elements.pad_mute)
             self._mixer.set_solo_element(self._elements.pad_solo)
             self._mixer.set_shift_button(self._elements.pad_shift)
+
             self._mixer.set_enabled(True)
 
-            # Device (all 16 encoders)
+            # Device
             self._device = SimpleDeviceComponent()
             self._device.name = 'Device'
             self._device.mixer = self._mixer
-            self._device.set_encoder_elements(self._elements.encoders)
+            self._device.set_encoder_elements(self._elements.encoders[0:16])
             self._device.set_enabled(True)
 
-            # Plugin Push Profiles
+            # Plugin Push Controls (FabFilter Pro-Q 3 profile)
             self._plugin_push = PluginPushComponent()
             self._plugin_push.name = 'PluginPush'
             self._plugin_push.set_encoder_1_button(self._elements.encoder_1_button)

@@ -2,51 +2,31 @@
 
 A customized MIDI Remote Script for the Arturia MiniLab MkII, targeting Ableton Live 12 Arrangement View.
 
-## Features
+## Hardware controls
 
-- **Arrangement View Centric**: Direct mixing, clip-gain editing, timeline scrubbing, and track navigation
-- **Auto-Color Engine**: Automatically colors tracks and clips based on track names (e.g., naming a track "kick" colors it pastel purple)
-- **Fast Encoders**: VST/Device knobs tuned for fast response (10x speed multiplier)
-- **Precision Scrubbing**: Knob 15 jumps 1 bar per step, with fine-tuned resistance when holding Shift (Pad 16)
-- **Free Mappings**: Knobs 13 & 14 and Pad 15 are unlinked for custom MIDI Learn
+The 16 encoders adjust parameters 1–16 of the selected device, in the order exposed by Live. If no device is selected, rotation targets the first device on the track. Hold pad 16 for finer adjustment of continuous parameters.
 
-## Hardware Layout
+| Selected plugin | Press encoder 1 | Press encoder 9 |
+| --- | --- | --- |
+| FabFilter Pro-Q 3 | Toggle band 1 | Toggle band 6 |
+| FabFilter Pro-C 2 | Auto Gain | Auto Release |
+| UADx SSL E Channel Strip | HF Bell | LF Bell |
+| UADx LA-6176 Channel Strip | Cycle EQ Hi Freq | Cycle EQ Lo Freq |
 
-```
- _________________________________________________________________________
-|  [ 1 ] [ 2 ] [ 3 ] [ 4 ]   [ 5 ] [ 6 ] [ 7 ] [ 8 ]                      |
-|  [ 9 ] [10 ] [11 ] [12 ]   [13 ] [14 ] [15 ] [16 ]   [ PADS 1 - 8 / 9-16 ]|
-|_________________________________________________________________________|
-```
+The plugin must expose the corresponding parameters in Live.
 
-### Encoders (Knobs 1-16)
+The physical Pad 1–8 / 9–16 button switches between note messages (MIDI notes 36–43) and control messages:
 
-| Knob | Mode / Function | Description |
-| :--- | :--- | :--- |
-| 1-8 | Device / VST Macros | Controls the 8 macro parameters of the currently selected device |
-| 9 | Cue Volume & Metronome | Rotate: Master Cue/Solo volume. Click: Toggle Metronome |
-| 10 | Clip Gain | Directly alters the gain parameter of the selected audio clip |
-| 11 | Track Pan | Adjusts the stereo pan of the currently selected track |
-| 12 | Track Volume | Controls the volume fader of the currently selected track |
-| 13 | FREE (MIDI Learn) | Unassigned. Map via CMD+M |
-| 14 | FREE (MIDI Learn) | Unassigned. Map via CMD+M |
-| 15 | Timeline Scrubbing | Rotate: Jumps playhead by 1 bar. Hold Pad 16 (Shift): Precision scrub |
-| 16 | Track Navigation | Vertical scrolling through tracks in Arrangement View |
-
-### Pads (Bank 2 / Transport & Modifiers)
-
-Access these controls with Pad Bank 2 (Pads 9-16) active on the controller.
-
-| Pad | LED Color | Function | Description |
-| :--- | :--- | :--- | :--- |
-| 9 | Green | Play | Starts transport playback |
-| 10 | Red | Stop | Stops transport playback |
-| 11 | Red | Global Record | Toggles global Arrangement recording |
-| 12 | Red | Arm Track | Toggles Arm/Record for the selected track |
-| 13 | Orange | Mute Track | Mutes/unmutes the selected track |
-| 14 | Blue | Solo Track | Solos/unsolos the selected track |
-| 15 | Cyan | FREE (Custom Action) | Unmapped by the script for custom MIDI mapping |
-| 16 | Purple | Shift Modifier | Hold to activate precision mode on Knob 15 |
+| Pad | Function |
+| --- | --- |
+| 9 | Toggle playback |
+| 10 | Stop |
+| 11 | Toggle global Arrangement recording |
+| 12 | Toggle arm for the selected track |
+| 13 | Toggle mute for the selected track |
+| 14 | Toggle exclusive solo. Hold pad 16 for non-exclusive solo. |
+| 15 | Free for custom MIDI mapping |
+| 16 | Hold for fine encoder adjustment or non-exclusive solo |
 
 ## Auto-Color Engine
 
