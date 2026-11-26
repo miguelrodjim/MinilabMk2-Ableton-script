@@ -4,7 +4,9 @@ A customized MIDI Remote Script for the Arturia MiniLab MkII, targeting Ableton 
 
 ## Hardware controls
 
-The 16 encoders adjust parameters 1–16 of the selected device, in the order exposed by Live. If no device is selected, rotation targets the first device on the track. Hold pad 16 for finer adjustment of continuous parameters.
+Encoders 1–15 adjust parameters 1–15 of the selected device, in the order exposed by Live. If no device is selected, rotation targets the first device on the track. Hold pad 16 for finer adjustment of continuous parameters.
+
+Encoder 16 is the AI Knob on macOS. Point at a supported control in Live and turn it. Install the [Hammerspoon module](https://github.com/miguelrodjim/les-macos-hammerspoon) to receive its channel 2, CC 55 messages. The Live Remote Script leaves this encoder unassigned.
 
 | Selected plugin | Press encoder 1 | Press encoder 9 |
 | --- | --- | --- |
@@ -25,8 +27,14 @@ The physical Pad 1–8 / 9–16 button switches between note messages (MIDI note
 | 12 | Toggle arm for the selected track |
 | 13 | Toggle mute for the selected track |
 | 14 | Toggle exclusive solo. Hold pad 16 for non-exclusive solo. |
-| 15 | Free for custom MIDI mapping |
+| 15 | Cycle Control Room monitoring EQ on Main |
 | 16 | Hold for fine encoder adjustment or non-exclusive solo |
+
+Pad 15 finds the three-chain `MONITOR` rack inside `CONTROL ROOM` on Main, or a `CONTROL ROOM` rack that holds the three chains directly. It cycles the Chain Selector through positions 0, 1, and 2 regardless of chain names or list order. Set the chain zones to 0 for HS7, 1 for 990 PRO, and 2 for none, and keep the chains enabled. Live shows the rack name and resulting selector position after each press.
+
+When Live disables direct editing of the selector, pad 15 uses the rack's `CORRECCIÓN` macro with the values from the monitoring variations (0, 61, and 127).
+
+On macOS, the matching Hammerspoon configuration switches this rack to `none` when Live opens Export Audio/Video. The rack stays on `none` after the dialog closes.
 
 ## Auto-Color Engine
 

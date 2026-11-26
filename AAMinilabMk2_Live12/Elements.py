@@ -117,5 +117,5 @@ class Elements(object):
         self.pad_arm = self.pads_bank_2[3]        # Pad 12
         self.pad_mute = self.pads_bank_2[4]       # Pad 13
         self.pad_solo = self.pads_bank_2[5]       # Pad 14
-        self.pad_15 = self.pads_bank_2[6]         # Pad 15 (free for user MIDI mapping)
+        self.pad_15 = self.pads_bank_2[6]         # Pad 15 (Control Room monitoring EQ)
         self.pad_shift = self.pads_bank_2[7]      # Pad 16 (Shift Modifier)
