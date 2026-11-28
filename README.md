@@ -4,9 +4,7 @@ A customized MIDI Remote Script for the Arturia MiniLab MkII, targeting Ableton 
 
 ## Hardware controls
 
-Encoders 1–15 adjust parameters 1–15 of the selected device, in the order exposed by Live. If no device is selected, rotation targets the first device on the track. Hold pad 16 for finer adjustment of continuous parameters.
-
-Encoder 16 is the AI Knob on macOS. Point at a supported control in Live and turn it. Install the [Hammerspoon module](https://github.com/miguelrodjim/les-macos-hammerspoon) to receive its channel 2, CC 55 messages. The Live Remote Script leaves this encoder unassigned.
+Encoders 1–16 adjust parameters 1–16 of the selected device, in the order exposed by Live. If no device is selected, rotation targets the first device on the track. Hold pad 16 for finer adjustment of continuous parameters.
 
 | Selected plugin | Press encoder 1 | Press encoder 9 |
 | --- | --- | --- |

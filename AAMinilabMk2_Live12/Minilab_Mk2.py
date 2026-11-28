@@ -100,8 +100,7 @@ class Minilab_Mk2(ControlSurface):
             self._device = SimpleDeviceComponent()
             self._device.name = 'Device'
             self._device.mixer = self._mixer
-            # Encoder 16 (CC 55) is handled by the Hammerspoon AI Knob.
-            self._device.set_encoder_elements(self._elements.encoders[:15])
+            self._device.set_encoder_elements(self._elements.encoders)
             self._device.set_enabled(True)
 
             # Plugin Push Controls (FabFilter Pro-Q 3 profile)
